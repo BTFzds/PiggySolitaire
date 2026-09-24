@@ -1,0 +1,17 @@
+---
+description: Vitest 单测约定（游戏引擎优先）
+globs: "**/*.{test,spec}.{ts,tsx}"
+alwaysApply: false
+---
+
+# Vitest（游戏引擎）
+
+摘自 `vitest-unit-testing-cursorrules-prompt-file`。
+
+- 优先测 `src/game` 业务规则，不测样式
+- `describe` 分组；用例名说清预期行为
+- 覆盖：合法/非法移动、收列、发牌约束（空列禁发）、Undo
+- 每文件保持聚焦（约 3–8 个用例）；边界与无效输入要测
+- 不依赖真实随机：洗牌用固定 seed / 注入牌序
+---
+

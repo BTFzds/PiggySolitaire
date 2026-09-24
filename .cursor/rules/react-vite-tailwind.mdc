@@ -1,0 +1,18 @@
+---
+description: React + Vite + Tailwind 约定（摘自 awesome-cursorrules，适配本项目）
+globs: "**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# React / Vite / Tailwind
+
+摘自 `typescript-nodejs-react-vite`、`rules-new/react`、`rules-new/tailwind`，去掉 Next/Vue/shadcn 等无关项。
+
+- 函数组件 + TypeScript interfaces；named export
+- 复杂游戏状态用 `useReducer`；可复用逻辑进 `src/hooks`
+- 目录名 lowercase-dashes；纯函数用 `function` 声明
+- Tailwind utility 优先；mobile-first；主题色走 `tailwind.config` / CSS 变量
+- 避免为性能默认堆 `useMemo`/`useCallback`；列表用稳定 key
+- 语义化 HTML；可点热区够大（触屏）
+---
+

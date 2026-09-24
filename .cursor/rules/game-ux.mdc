@@ -1,0 +1,15 @@
+---
+description: 蜘蛛纸牌交互与动效
+globs: "src/components/**/*.tsx,src/hooks/**/*.ts"
+alwaysApply: false
+---
+
+# 游戏 UX
+
+- 主交互是点击自动落牌，不是拖拽
+- 非法点击：短晃动（shake），不弹阻塞式报错
+- 动效克制：发牌、落牌、收列、撤销；不挡读牌
+- 顶栏按钮在手机竖屏不被遮挡；10 列尽量同屏
+- Hint / Undo 次数不设上限
+---
+

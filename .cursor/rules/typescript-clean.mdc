@@ -1,0 +1,17 @@
+---
+description: TypeScript 与整洁代码约定
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# TypeScript & Clean Code
+
+摘自 `rules-new/typescript`、`rules-new/clean-code`。
+
+- 严格模式；对象形状优先 `interface`；联合用 `type`；禁止 `any` 蔓延（用 `unknown`）
+- 不用 enum，用联合字面量或 const map
+- 公开纯函数写明确返回类型；避免魔法数字，用命名常量
+- 单一职责；游戏规则与 UI 分离（`src/game` 无 DOM）
+- 注释解释「为什么」，不复述代码
+---
+
