@@ -1,4 +1,4 @@
-import { PlayingCard, type CardSize } from './PlayingCard'
+import { PlayingCard, type CardSize, type HintRole } from './PlayingCard'
 import type { HintRef, TableauCard } from '@/game/types'
 
 interface TableauColumnProps {
@@ -21,9 +21,10 @@ export function TableauColumn({
   onCardClick,
 }: TableauColumnProps) {
   if (cards.length === 0) {
+    const emptyTarget = hint?.toCol === columnIndex
     return (
       <div className="flex flex-col items-center min-h-[4rem]">
-        <PlayingCard size={size} placeholder />
+        <PlayingCard size={size} placeholder hintRole={emptyTarget ? 'target' : null} />
       </div>
     )
   }
@@ -33,9 +34,12 @@ export function TableauColumn({
       {cards.map((card, index) => {
         const isTop = index === cards.length - 1
         const shaking = shook?.col === columnIndex && shook.cardIndex === index
-        const hinted =
-          (hint?.fromCol === columnIndex && hint.cardIndex === index) ||
-          (hint?.toCol === columnIndex && isTop)
+        let hintRole: HintRole | null = null
+        if (hint?.fromCol === columnIndex && index >= hint.cardIndex) {
+          hintRole = 'source'
+        } else if (hint?.toCol === columnIndex && isTop) {
+          hintRole = 'target'
+        }
         const canClick = card.faceUp
 
         return (
@@ -52,7 +56,7 @@ export function TableauColumn({
               faceDown={!card.faceUp}
               size={size}
               shaking={Boolean(shaking)}
-              hinted={Boolean(hinted)}
+              hintRole={hintRole}
               onClick={canClick ? () => onCardClick(columnIndex, index) : undefined}
             />
           </div>

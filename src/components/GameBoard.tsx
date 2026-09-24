@@ -65,10 +65,6 @@ export function GameBoard({
           ))}
         </div>
       </div>
-
-      <p className="mt-4 text-center text-[11px] text-cream/55 px-4">
-        点明牌自动落到合适列；动不了会晃一下。空列时不能发牌。
-      </p>
     </main>
   )
 }

@@ -21,7 +21,6 @@ export function snapshotOf(state: GameState): GameSnapshot {
     tableau: cloneTableau(state.tableau),
     stock: cloneStock(state.stock),
     foundations: state.foundations,
-    moves: state.moves,
     timerStartedAt: state.timerStartedAt,
     won: state.won,
   }
@@ -33,7 +32,6 @@ export function restoreSnapshot(state: GameState, snap: GameSnapshot): GameState
     tableau: cloneTableau(snap.tableau),
     stock: cloneStock(snap.stock),
     foundations: snap.foundations,
-    moves: snap.moves,
     timerStartedAt: snap.timerStartedAt,
     won: snap.won,
   }
@@ -80,6 +78,8 @@ export function createNewGame(difficulty: Difficulty, seed: number): GameState {
     stock,
     foundations: 0,
     moves: 0,
+    undos: 0,
+    scoreForcedZero: false,
     timerStartedAt: null,
     won: false,
     history: [],

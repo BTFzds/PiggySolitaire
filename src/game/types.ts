@@ -34,18 +34,26 @@ export interface GameState {
   stock: CardFace[]
   /** Completed same-suit K→A runs (0–8) */
   foundations: number
+  /** Cumulative legal card moves (never decreases on undo; deals excluded) */
   moves: number
+  /** Cumulative undo count (never decreases) */
+  undos: number
+  /**
+   * XP quirk: undoing while score was negative forces displayed score to 0
+   * until the next scoring action or new game.
+   */
+  scoreForcedZero: boolean
   /** Epoch ms when first player action happened; null until then */
   timerStartedAt: number | null
   won: boolean
   history: GameSnapshot[]
 }
 
+/** Board snapshot only — scoring counters (moves/undos) are not rewound */
 export interface GameSnapshot {
   tableau: TableauCard[][]
   stock: CardFace[]
   foundations: number
-  moves: number
   timerStartedAt: number | null
   won: boolean
 }

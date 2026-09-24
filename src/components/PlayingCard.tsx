@@ -3,6 +3,7 @@ import { isRed, RANK_LABEL, SUIT_SYMBOL } from '@/game/deck'
 import type { TableauCard } from '@/game/types'
 
 export type CardSize = 'xs' | 'sm' | 'md'
+export type HintRole = 'source' | 'target'
 
 interface PlayingCardProps {
   card?: TableauCard
@@ -10,7 +11,7 @@ interface PlayingCardProps {
   size?: CardSize
   placeholder?: boolean
   selected?: boolean
-  hinted?: boolean
+  hintRole?: HintRole | null
   shaking?: boolean
   onClick?: () => void
   className?: string
@@ -29,7 +30,7 @@ export function PlayingCard({
   size = 'sm',
   placeholder,
   selected,
-  hinted,
+  hintRole,
   shaking,
   onClick,
   className = '',
@@ -38,9 +39,14 @@ export function PlayingCard({
   const box = SIZE_BOX[size]
 
   if (placeholder) {
+    const targetEmpty = hintRole === 'target'
     return (
       <div
-        className={`${box} rounded-md border-2 border-dashed border-white/30 bg-black/10 shrink-0 ${className}`}
+        className={`${box} rounded-md border-2 border-dashed shrink-0 ${
+          targetEmpty
+            ? 'border-emerald-200 bg-emerald-300/25 shadow-hint-target animate-hint-pulse'
+            : 'border-white/30 bg-black/10'
+        } ${className}`}
         style={style}
         aria-label="空列"
       />
@@ -48,14 +54,17 @@ export function PlayingCard({
   }
 
   const interactive = Boolean(onClick)
-  const ring = selected
-    ? 'ring-2 ring-gold-bright'
-    : hinted
-      ? 'ring-2 ring-amber-200/90'
-      : ''
+  const hintCls =
+    hintRole === 'source'
+      ? 'shadow-hint animate-hint-pulse z-20'
+      : hintRole === 'target'
+        ? 'shadow-hint-target animate-hint-pulse z-20'
+        : selected
+          ? 'ring-2 ring-gold-bright'
+          : ''
   const shakeCls = shaking ? 'animate-card-shake' : ''
 
-  const shellCls = `${box} ${ring} ${shakeCls} rounded-md shadow-card shrink-0 overflow-hidden ${
+  const shellCls = `${box} ${hintCls} ${shakeCls} rounded-md shadow-card shrink-0 overflow-hidden ${
     interactive ? 'cursor-pointer active:scale-[0.98]' : 'cursor-default'
   } ${className}`
 
@@ -63,10 +72,12 @@ export function PlayingCard({
     const back = (
       <div
         style={style}
-        className={`${shellCls} border border-gold/35 bg-gradient-to-br from-chip-blue to-wood flex items-center justify-center`}
+        className={`${shellCls} card-back border-2 border-gold-bright/70`}
         aria-label="牌背"
       >
-        <span className="text-gold-bright/75 font-display text-sm leading-none">♦</span>
+        <span className="relative z-[1] text-white/90 font-display text-base leading-none drop-shadow-sm">
+          ♦
+        </span>
       </div>
     )
     if (!interactive) {

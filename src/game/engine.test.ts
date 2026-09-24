@@ -8,6 +8,7 @@ import {
   isMovableRun,
 } from './moves'
 import { clickCard, dealStock, undo } from './engine'
+import { computeRawScore, computeScore } from './score'
 import type { TableauCard } from './types'
 
 function card(
@@ -70,9 +71,8 @@ describe('deal stock constraint', () => {
 })
 
 describe('click move and undo', () => {
-  it('auto-moves a card onto a valid target and undo restores', () => {
+  it('auto-moves a card onto a valid target; undo restores board but keeps move count and adds undo', () => {
     const state = createNewGame('easy', 42)
-    // Build a controlled mini board
     const controlled = {
       ...state,
       tableau: [
@@ -91,7 +91,6 @@ describe('click move and undo', () => {
       history: [],
     }
 
-    // 8-7 整段落到 9 上（单点 7 无法落到 9）
     const move = findAutoMove(controlled.tableau, 0, 0)
     expect(move).toEqual({ fromCol: 0, cardIndex: 0, toCol: 1 })
 
@@ -99,12 +98,16 @@ describe('click move and undo', () => {
     expect(after.state.tableau[0]?.map((c) => c.rank)).toEqual([])
     expect(after.state.tableau[1]?.map((c) => c.rank)).toEqual([9, 8, 7])
     expect(after.state.moves).toBe(1)
+    expect(after.state.undos).toBe(0)
     expect(after.state.timerStartedAt).toBe(1000)
+    expect(computeScore(after.state.moves, after.state.undos, after.state.foundations)).toBe(499)
 
     const undone = undo(after.state)
     expect(undone.tableau[0]?.map((c) => c.rank)).toEqual([8, 7])
     expect(undone.tableau[1]?.map((c) => c.rank)).toEqual([9])
-    expect(undone.moves).toBe(0)
+    expect(undone.moves).toBe(1)
+    expect(undone.undos).toBe(1)
+    expect(computeScore(undone.moves, undone.undos, undone.foundations)).toBe(498)
   })
 
   it('shakes when card cannot move', () => {
@@ -134,6 +137,22 @@ describe('click move and undo', () => {
     const result = dealStock(controlled, 2)
     expect(result.state.stock.length).toBe(controlled.stock.length)
   })
+
+  it('deal does not increase moves or change score counters', () => {
+    const state = createNewGame('easy', 3)
+    const full = {
+      ...state,
+      moves: 5,
+      undos: 1,
+      tableau: Array.from({ length: 10 }, () => [card('hearts', 5)]),
+      stock: state.stock,
+      history: [],
+    }
+    const result = dealStock(full, 10)
+    expect(result.state.moves).toBe(5)
+    expect(result.state.undos).toBe(1)
+    expect(result.state.stock.length).toBe(full.stock.length - 10)
+  })
 })
 
 describe('createNewGame deal layout', () => {
@@ -147,5 +166,50 @@ describe('createNewGame deal layout', () => {
       true,
     )
     expect(g.tableau.flat().every((c) => c.suit === 'hearts')).toBe(true)
+  })
+})
+
+describe('XP computeScore', () => {
+  it('matches 500 − (moves + undos) + foundations×100', () => {
+    expect(computeRawScore(0, 0, 0)).toBe(500)
+    expect(computeRawScore(120, 0, 8)).toBe(1180)
+    expect(computeRawScore(10, 2, 1)).toBe(500 - 12 + 100)
+  })
+
+  it('forces zero when scoreForcedZero', () => {
+    expect(computeScore(600, 0, 0, true)).toBe(0)
+    expect(computeScore(600, 0, 0, false)).toBe(-100)
+  })
+
+  it('undo while negative forces scoreForcedZero', () => {
+    const state = createNewGame('easy', 1)
+    const negative = {
+      ...state,
+      moves: 600,
+      undos: 0,
+      foundations: 0,
+      tableau: [
+        [card('hearts', 8), card('hearts', 7)],
+        [card('hearts', 9)],
+        [card('hearts', 2)],
+        [card('hearts', 3)],
+        [card('hearts', 4)],
+        [card('hearts', 5)],
+        [card('hearts', 6)],
+        [card('hearts', 10)],
+        [card('hearts', 11)],
+        [card('hearts', 12)],
+      ],
+      history: [],
+    }
+    const moved = clickCard(negative, 0, 0, 1)
+    expect(computeRawScore(moved.state.moves, moved.state.undos, moved.state.foundations)).toBeLessThan(
+      0,
+    )
+    const undone = undo(moved.state)
+    expect(undone.scoreForcedZero).toBe(true)
+    expect(
+      computeScore(undone.moves, undone.undos, undone.foundations, undone.scoreForcedZero),
+    ).toBe(0)
   })
 })

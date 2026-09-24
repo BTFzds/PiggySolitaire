@@ -12,11 +12,11 @@ interface UiExtras {
   elapsedMs: number
 }
 
-function initState(difficulty: Difficulty = 'easy'): GameState {
+function initState(difficulty: Difficulty = 'hard'): GameState {
   return createNewGame(difficulty, randomSeed())
 }
 
-export function useSpiderGame(initialDifficulty: Difficulty = 'easy') {
+export function useSpiderGame(initialDifficulty: Difficulty = 'hard') {
   const [state, setState] = useState(() => initState(initialDifficulty))
   const [ui, setUi] = useState<UiExtras>({
     shook: null,
@@ -127,7 +127,7 @@ export function useSpiderGame(initialDifficulty: Difficulty = 'easy') {
     apply({ type: 'HINT' })
     hintClearRef.current = window.setTimeout(() => {
       setUi((u) => ({ ...u, hint: null }))
-    }, 3500)
+    }, 6000)
   }, [apply])
 
   return {

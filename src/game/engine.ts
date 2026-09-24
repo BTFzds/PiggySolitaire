@@ -8,6 +8,7 @@ import {
   flipExposed,
   isMovableRun,
 } from './moves'
+import { computeRawScore } from './score'
 import type { Difficulty, GameState, HintRef, MoveRef } from './types'
 import { COLUMN_COUNT, FOUNDATION_TARGET } from './types'
 
@@ -22,10 +23,8 @@ export type GameAction =
 
 export interface GameActionResult {
   state: GameState
-  /** UI feedback when click cannot move */
   shook?: { col: number; cardIndex: number }
   hint?: HintRef | null
-  /** Last successful auto-move for land animation */
   lastMove?: MoveRef
 }
 
@@ -61,6 +60,7 @@ function collectCompletedRuns(state: GameState): GameState {
           ...next,
           tableau,
           foundations: next.foundations + 1,
+          scoreForcedZero: false,
         }
         changed = true
         break
@@ -88,6 +88,7 @@ function applyMove(state: GameState, move: MoveRef, now: number): GameState {
     ...next,
     tableau,
     moves: next.moves + 1,
+    scoreForcedZero: false,
   }
   return collectCompletedRuns(next)
 }
@@ -108,11 +109,12 @@ export function dealStock(state: GameState, now: number): GameActionResult {
     column.push({ ...card, faceUp: true })
     tableau[col] = column
   }
+  // XP: dealing does not count as a move / does not deduct score
   next = {
     ...next,
     stock,
     tableau,
-    moves: next.moves + 1,
+    scoreForcedZero: false,
   }
   next = collectCompletedRuns(next)
   return { state: next }
@@ -148,8 +150,18 @@ export function undo(state: GameState): GameState {
   if (!snap) {
     return state
   }
+
+  const scoreBefore = computeRawScore(state.moves, state.undos, state.foundations)
   const restored = restoreSnapshot(state, snap)
-  return { ...restored, history }
+  return {
+    ...restored,
+    history,
+    // Scoring counters are never rewound; undo itself costs 1
+    moves: state.moves,
+    undos: state.undos + 1,
+    // XP: undo while negative → force score to 0
+    scoreForcedZero: scoreBefore < 0 ? true : false,
+  }
 }
 
 export function gameReducer(state: GameState, action: GameAction, now = Date.now()): GameActionResult {

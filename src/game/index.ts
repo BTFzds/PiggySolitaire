@@ -33,3 +33,11 @@ export {
   stockDealsRemaining,
 } from './engine'
 export type { GameAction, GameActionResult } from './engine'
+export {
+  computeScore,
+  computeRawScore,
+  SCORE_START,
+  SCORE_PER_MOVE,
+  SCORE_PER_UNDO,
+  SCORE_PER_FOUNDATION,
+} from './score'
